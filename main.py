@@ -7,6 +7,11 @@ import asyncio
 import time
 import re
 from pymongo import MongoClient
+import os
+
+print(f"BOT_TOKEN: {'Set' if os.getenv('BOT_TOKEN') else 'Not set'}")
+print(f"TELEGRAM_CHANNEL_USERNAME: {os.getenv('TELEGRAM_CHANNEL_USERNAME')}")
+print(f"MONGO_CONNECTION_STRING: {'Set' if os.getenv('MONGO_CONNECTION_STRING') else 'Not set'}")
 
 
 # Load environment variables
@@ -96,15 +101,20 @@ async def send_polls(questions):
         # Translate the correct answer index
         correct_option_id = q['correct_answer']
         
-        await bot.send_poll(
-            chat_id=TELEGRAM_CHANNEL_USERNAME,
-            question=translated_question,
-            options=translated_options,
-            type=Poll.QUIZ,
-            correct_option_id=correct_option_id,
-            is_anonymous=True
-        )
+        try:
+            await bot.send_poll(
+                chat_id=TELEGRAM_CHANNEL_USERNAME,
+                question=translated_question,
+                options=translated_options,
+                type=Poll.QUIZ,
+                correct_option_id=correct_option_id,
+                is_anonymous=True
+            )
+        except Exception as e:
+            print(f"Error sending poll: {e}")
+            print(f"TELEGRAM_CHANNEL_USERNAME: {TELEGRAM_CHANNEL_USERNAME}")
         time.sleep(3)  # Adding a 3-second delay between sending polls
+
 
 def main():
     url = "https://www.gktoday.in/gk-current-affairs-quiz-questions-answers/"
