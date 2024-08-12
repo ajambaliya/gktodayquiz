@@ -8,6 +8,9 @@ import time
 import re
 from pymongo import MongoClient
 
+# At the beginning of your script, after importing os:
+print(f"BOT_TOKEN: {BOT_TOKEN}")
+
 # Load environment variables
 DB_NAME = 'indiabixurl'
 COLLECTION_NAME = 'ScrapedLinks'
