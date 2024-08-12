@@ -13,7 +13,7 @@ DB_NAME = 'indiabixurl'
 COLLECTION_NAME = 'ScrapedLinks'
 MONGO_CONNECTION_STRING = os.getenv('MONGO_CONNECTION_STRING')
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-CHANNEL_USERNAME = os.getenv('CHANNEL_USERNAME')
+CHANNEL_USERNAME = os.getenv('TELEGRAM_CHANNEL_USERNAME')
 
 # Connect to MongoDB
 def get_mongo_client():
@@ -83,7 +83,7 @@ def translate_text(text, target_language='gu'):
 
 # Function to send questions as polls to the Telegram channel
 async def send_polls(questions):
-    bot = Bot(token='5943040202:AAEqzppB0ZkroVLdpjrMfH5T7hJlfCoWvzc')
+    bot = Bot(token=BOT_TOKEN)
     for q in questions:
         question = q['question']
         options = q['options']
