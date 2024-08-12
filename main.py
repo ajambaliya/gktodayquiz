@@ -83,7 +83,7 @@ def translate_text(text, target_language='gu'):
 
 # Function to send questions as polls to the Telegram channel
 async def send_polls(questions):
-    bot = Bot(token=BOT_TOKEN)
+    bot = Bot(token='5943040202:AAEqzppB0ZkroVLdpjrMfH5T7hJlfCoWvzc')
     for q in questions:
         question = q['question']
         options = q['options']
