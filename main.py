@@ -14,7 +14,7 @@ DB_NAME = 'indiabixurl'
 COLLECTION_NAME = 'ScrapedLinks'
 MONGO_CONNECTION_STRING = os.getenv('MONGO_CONNECTION_STRING')
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-CHANNEL_USERNAME = os.getenv('TELEGRAM_CHANNEL_USERNAME')
+TELEGRAM_CHANNEL_USERNAME = os.getenv('TELEGRAM_CHANNEL_USERNAME')
 
 # Connect to MongoDB
 def get_mongo_client():
@@ -97,7 +97,7 @@ async def send_polls(questions):
         correct_option_id = q['correct_answer']
         
         await bot.send_poll(
-            chat_id=CHANNEL_USERNAME,
+            chat_id=TELEGRAM_CHANNEL_USERNAME,
             question=translated_question,
             options=translated_options,
             type=Poll.QUIZ,
