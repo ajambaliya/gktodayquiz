@@ -7,6 +7,12 @@ import asyncio
 import time
 import re
 from pymongo import MongoClient
+import os
+
+print(f"BOT_TOKEN: {'Set' if os.getenv('BOT_TOKEN') else 'Not set'}")
+print(f"TELEGRAM_CHANNEL_USERNAME: {os.getenv('TELEGRAM_CHANNEL_USERNAME')}")
+print(f"MONGO_CONNECTION_STRING: {'Set' if os.getenv('MONGO_CONNECTION_STRING') else 'Not set'}")
+
 
 # Load environment variables
 DB_NAME = 'indiabixurl'
@@ -38,15 +44,12 @@ def fetch_links(url):
 def scrape_content_from_links(selected_links):
     all_questions = []
     for link in selected_links:
-        try:
-            response = requests.get(link)
-            soup = BeautifulSoup(response.text, 'html.parser')
-            post_content = soup.find('div', class_='inside_post column content_width')
-            if post_content:
-                questions = extract_questions(post_content)
-                all_questions.extend(questions)
-        except Exception as e:
-            print(f"Error scraping content from {link}: {e}")
+        response = requests.get(link)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        post_content = soup.find('div', class_='inside_post column content_width')
+        if post_content:
+            questions = extract_questions(post_content)
+            all_questions.extend(questions)
     return all_questions
 
 # Function to extract questions, options, and correct answers
@@ -65,20 +68,32 @@ def extract_questions(post_content):
             if clean_option:
                 options.append(clean_option)
         
+        # Try the first method to find the correct answer
         answer_div = quiz.find_next('div', class_='wp_basic_quiz_answer')
         correct_answer_text = answer_div.find('div', class_='ques_answer').text.strip()
-        try:
-            correct_answer_letter = correct_answer_text.split(':')[-1].strip()[0]
-            correct_answer_index = ['A', 'B', 'C', 'D'].index(correct_answer_letter)
-            if len(options) >= 2:
-                questions.append({
-                    'question': question_text,
-                    'options': options,
-                    'correct_answer': correct_answer_index
-                })
-        except (IndexError, ValueError):
-            print(f"Error extracting correct answer for question: {question_text}")
+        correct_answer_letter = correct_answer_text.split(':')[-1].strip()[0]
+        correct_answer_index = ['A', 'B', 'C', 'D'].index(correct_answer_letter)
+        
+        # If the first method fails, try the second method
+        if correct_answer_index < 0 or correct_answer_index >= len(options):
+            correct_answer_index = find_correct_answer_second_method(quiz)
+        
+        if len(options) >= 2:
+            questions.append({
+                'question': question_text,
+                'options': options,
+                'correct_answer': correct_answer_index
+            })
     return questions
+
+def find_correct_answer_second_method(quiz):
+    try:
+        correct_answer_div = quiz.find('div', class_='correct_answer')
+        correct_answer_letter = correct_answer_div.text.strip()[0]
+        correct_answer_index = ['A', 'B', 'C', 'D'].index(correct_answer_letter)
+        return correct_answer_index
+    except:
+        return -1  # Return -1 if the second method also fails
 
 # Function to translate text to Gujarati
 def translate_text(text, target_language='gu'):
@@ -113,6 +128,7 @@ async def send_polls(questions):
             print(f"Error sending poll: {e}")
             print(f"TELEGRAM_CHANNEL_USERNAME: {TELEGRAM_CHANNEL_USERNAME}")
         time.sleep(3)  # Adding a 3-second delay between sending polls
+
 
 def main():
     url = "https://www.gktoday.in/gk-current-affairs-quiz-questions-answers/"
