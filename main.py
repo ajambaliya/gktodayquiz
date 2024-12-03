@@ -69,20 +69,27 @@ def extract_questions(post_content):
         # Try the first method to find the correct answer
         answer_div = quiz.find_next('div', class_='wp_basic_quiz_answer')
         correct_answer_text = answer_div.find('div', class_='ques_answer').text.strip()
-        correct_answer_letter = correct_answer_text.split(':')[-1].strip()[0]
-        correct_answer_index = ['A', 'B', 'C', 'D'].index(correct_answer_letter)
+        correct_answer_letter = correct_answer_text.split(':')[-1].strip()[0]  # Should be 'A', 'B', 'C', or 'D'
+
+        # Ensure correct_answer_letter is a valid option
+        if correct_answer_letter not in ['A', 'B', 'C', 'D']:
+            print(f"Warning: Unexpected correct answer letter '{correct_answer_letter}' for question: {question_text}")
+            correct_answer_index = -1  # Could use -1 to indicate missing/invalid answer
+        else:
+            correct_answer_index = ['A', 'B', 'C', 'D'].index(correct_answer_letter)
         
         # If the first method fails, try the second method
-        if correct_answer_index < 0 or correct_answer_index >= len(options):
+        if correct_answer_index == -1:
             correct_answer_index = find_correct_answer_second_method(quiz)
         
-        if len(options) >= 2:
+        if len(options) >= 2 and correct_answer_index != -1:
             questions.append({
                 'question': question_text,
                 'options': options,
                 'correct_answer': correct_answer_index
             })
     return questions
+
 
 def find_correct_answer_second_method(quiz):
     try:
